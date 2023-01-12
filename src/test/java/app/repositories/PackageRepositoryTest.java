@@ -2,7 +2,9 @@ package app.repositories;
 
 import app.daos.CardDao;
 import app.dtos.CardInfo;
+import app.dtos.UserDTO;
 import app.models.Card;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -100,10 +102,111 @@ class PackageRepositoryTest {
     }
 
     @Test
-    @DisplayName("open Package -> not enought")
-    void testOpenPackage_notEnought(){
+    @DisplayName("open Package -> not enough")
+    void testOpenPackage_notEnough() throws SQLException {
+        //arrange
+        UserDTO user = mock(UserDTO.class);
+        CardDao cardDao = mock(CardDao.class);
+        UserRepository userRepository = mock(UserRepository.class);
+        PackageRepository packageRepository = new PackageRepository(userRepository, cardDao);
+        ArrayList<Card> pack = new ArrayList<>();
+        pack.add(new Card(
+                "1",
+                "testcard1",
+                20,
+                null,
+                true,
+                false,
+                false)
+        );
+
+        when(cardDao.readPackCards()).thenReturn(pack);
+
+        //act
+        ArrayList<Card> result = packageRepository.openPackage(user);
+
+        //assert
+        assertEquals(pack, result);
+    }
+
+    @Test
+    @DisplayName("open Package -> check inPack")
+    void testOpenPackage_checkInPack() throws SQLException {
+        //arrange
+        UserDTO user = mock(UserDTO.class);
+        CardDao cardDao = mock(CardDao.class);
+        Card card = mock(Card.class);
+        UserRepository userRepository = mock(UserRepository.class);
+        PackageRepository packageRepository = new PackageRepository(userRepository, cardDao);
+        ArrayList<Card> pack = new ArrayList<>();
+        Card card1 = new Card("1","testcard1", 20, null, true, false, false);
+        Card card2 = new Card("2","testcard2", 20, null, true, false, false);
+        Card card3 = new Card("3","testcard3", 20, null, true, false, false);
+        Card card4 = new Card("4","testcard4", 20, null, true, false, false);
+        Card card5 = new Card("5","testcard5", 20, null, true, false, false);
+
+        pack.add(card1);
+        pack.add(card2);
+        pack.add(card3);
+        pack.add(card4);
+        pack.add(card5);
+
+        when(cardDao.readPackCards()).thenReturn(pack);
+
+        //act
+        ArrayList<Card> result = packageRepository.openPackage(user);
+
+        //assert
+        assertFalse(result.get(0).isInPack());
+        assertFalse(result.get(1).isInPack());
+        assertFalse(result.get(2).isInPack());
+        assertFalse(result.get(3).isInPack());
+        assertFalse(result.get(4).isInPack());
 
 
 
     }
+
+
+    //TODO: not working properly
+    /*
+    @Test
+    @DisplayName("open Package ->user methods")
+    void testOpenPackage_userMethods() throws SQLException {
+        //arrange
+        UserDTO user = mock(UserDTO.class);
+        CardDao cardDao = mock(CardDao.class);
+        UserRepository userRepository = mock(UserRepository.class);
+        ArgumentCaptor<UserDTO> argumentCaptor = ArgumentCaptor.forClass(UserDTO.class);
+
+        PackageRepository packageRepository = new PackageRepository(userRepository, cardDao);
+        ArrayList<Card> pack = new ArrayList<>();
+        pack.add(new Card(
+                "1",
+                "testcard1",
+                20,
+                null,
+                true,
+                false,
+                false)
+        );
+
+        when(cardDao.readPackCards()).thenReturn(pack);
+
+        //act
+        ArrayList<Card> result = packageRepository.openPackage(user);
+
+        //assert
+        verify(user).getStack().addAll(pack);
+        verify(user).setCoins(user.getCoins() -5);
+        verify(userRepository).updateUser(user);
+
+        verify(userRepository, times(1)).updateUser(argumentCaptor.capture());
+        ArrayList<UserDTO> capturedUser = (ArrayList<UserDTO>) argumentCaptor.getAllValues();
+
+        assertEquals(15, capturedUser.get(0).getCoins());
+    }
+
+   */
+
 }

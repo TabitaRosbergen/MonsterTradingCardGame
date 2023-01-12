@@ -8,15 +8,6 @@ public class Main {
         App app = new App();
         Server server = new Server(app, 10001);
 
-        //TEST userControllerMethods////////////////////////////////////////////
-        //GET-----------------------------------------------------------------
-        //app.userController.getUsers();
-        //CREATE--------------------------------------------------------------
-        //app.userController.createUser("{\"Username\":\"rudi\", \"Password\":\"bla\"}");
-        //EDIT----------------------------------------------------------------
-        //app.userController.editUser("{\"Name\": \"Kienboeck\",  \"Bio\": \"me playin...\",\"Image\": \":-)\"}");
-        //app.userController.editUser("{\"Name\": \"Kienboeck\"}");
-
         try {
             server.start();
         } catch (IOException e) {

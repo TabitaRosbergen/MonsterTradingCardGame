@@ -57,7 +57,7 @@ public class PackageRepository {
         }
     }
 
-    public ArrayList<Card>  openPackage(UserDTO user) { //throw
+    public ArrayList<Card> openPackage(UserDTO user) { //throw
         try {
             ArrayList<Card> pack = getCardDao().readPackCards();
             if(pack.size() < 5){
