@@ -1,9 +1,7 @@
 package app.controllers;
-
 import app.daos.CardDao;
 import app.dtos.UserDTO;
 import app.models.Card;
-import app.models.Trade;
 import app.repositories.TradeRepository;
 import app.repositories.UserRepository;
 import http.ContentType;
@@ -12,10 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import server.Response;
-
 import java.sql.SQLException;
-import java.util.ArrayList;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -63,8 +58,6 @@ class TradeControllerTest {
         assertEquals(expected_response.getContentType(), response.getContentType());
         assertEquals(expected_response.getContent(), response.getContent());
 
-
-
     }
 
 
@@ -92,8 +85,6 @@ class TradeControllerTest {
         assertEquals(expected_response.getStatusMessage(), response.getStatusMessage());
         assertEquals(expected_response.getContentType(), response.getContentType());
         assertEquals(expected_response.getContent(), response.getContent());
-
-
 
     }
 
@@ -123,8 +114,6 @@ class TradeControllerTest {
         assertEquals(expected_response.getContentType(), response.getContentType());
         assertEquals(expected_response.getContent(), response.getContent());
 
-
-
     }
 
     @Test
@@ -138,7 +127,6 @@ class TradeControllerTest {
                 ContentType.JSON,
                 "{ \"data\": null, \"error\": \"A deal with this deal ID already exists.\" }"
         );
-
 
         Card card = new Card("1", "testCard", 20, "max", true, false, false );
 
@@ -157,14 +145,9 @@ class TradeControllerTest {
         assertEquals(expected_response.getContent(), response.getContent());
 
 
-
     }
 
-
-
-
 }
-
 
 
 /*

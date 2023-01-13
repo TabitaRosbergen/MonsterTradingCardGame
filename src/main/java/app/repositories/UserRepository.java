@@ -24,21 +24,17 @@ import java.util.LinkedHashMap;
 public class UserRepository implements Repository<UserDTO, String> {
     UserDao userDao;
     CardDao cardDao;
-    //TODO: hier card oder stack dao oder ähnliches???
 
-    //HashMap<String, UserDTO> usersCache = new HashMap(); //key: name
-
-    //CONSTRUCTOR: inject DAO -> test with mocked DAO objects
     public UserRepository(UserDao userDao, CardDao cardDao) {
         setUserDao(userDao);
         setCardDao(cardDao);
     }
 
     @Override
-    public UserDTO getById(String username){
+    public UserDTO getById(String username) {
         try {
             User user = getUserDao().read(username);
-            if(user == null){
+            if (user == null) {
                 return null;
             }
 
@@ -47,8 +43,8 @@ public class UserRepository implements Repository<UserDTO, String> {
             ArrayList<Card> userStack = new ArrayList<>();
             ArrayList<Card> userDeck = new ArrayList<>();
 
-            for(Card card : userCards){
-                if (card.isInDeck()){
+            for (Card card : userCards) {
+                if (card.isInDeck()) {
                     userDeck.add(card);
                 } else {
                     userStack.add(card);
@@ -69,14 +65,14 @@ public class UserRepository implements Repository<UserDTO, String> {
             );
 
         } catch (SQLException e) {
-           e.printStackTrace();
-           throw new RuntimeException();
+            e.printStackTrace();
+            throw new RuntimeException();
         }
     }
 
-    public ArrayList<Card> getUserCards (String username) {
+    public ArrayList<Card> getUserCards(String username) {
         UserDTO user = this.getById(username);
-        if(user == null){
+        if (user == null) {
             return null;
         }
 
@@ -87,46 +83,46 @@ public class UserRepository implements Repository<UserDTO, String> {
     }
 
 
-    public ArrayList<Card> getUserDeck (String username) {
+    public ArrayList<Card> getUserDeck(String username) {
         UserDTO user = this.getById(username);
-        if(user == null){
+        if (user == null) {
             return null;
         }
 
         return user.getDeck();
     }
 
-    public boolean setUserDeck (ArrayList<String> cardIds, String username) {
+    public boolean setUserDeck(ArrayList<String> cardIds, String username) {
         try {
 
             //check if cards belong to user
-            for(String cardId : cardIds){
+            for (String cardId : cardIds) {
                 Card card = getCardDao().read(cardId);
-                if(card == null || !card.getOwner().equals(username) || card.isInTrade()){
+                if (card == null || !card.getOwner().equals(username) || card.isInTrade()) {
                     return false;
                 }
             }
 
             //load user
             UserDTO user = this.getById(username);
-            if(user == null){
+            if (user == null) {
                 return false;
             }
 
             user.getStack().addAll(user.getDeck());
             user.getDeck().clear();
 
-            for(String cardId : cardIds){
-                for(Card card : user.getStack()){
-                    if(card.getId().equals(cardId)){
+            for (String cardId : cardIds) {
+                for (Card card : user.getStack()) {
+                    if (card.getId().equals(cardId)) {
                         user.getDeck().add(card);
                     }
                 }
             }
 
-            for(String cardId : cardIds){
-                for(Card card : user.getDeck()){
-                    if(card.getId().equals(cardId)){
+            for (String cardId : cardIds) {
+                for (Card card : user.getDeck()) {
+                    if (card.getId().equals(cardId)) {
                         user.getStack().remove(card);
                     }
                 }
@@ -140,7 +136,7 @@ public class UserRepository implements Repository<UserDTO, String> {
         }
     }
 
-    public void updateUser(UserDTO userDTO){
+    public void updateUser(UserDTO userDTO) {
         try {
             //first update user
             User user = new User(
@@ -157,11 +153,11 @@ public class UserRepository implements Repository<UserDTO, String> {
             getUserDao().update(user);
 
             //update Cards
-            for(Card card : userDTO.getStack()){
+            for (Card card : userDTO.getStack()) {
                 card.setInDeck(false);
             }
 
-            for(Card card : userDTO.getDeck()){
+            for (Card card : userDTO.getDeck()) {
                 card.setInDeck(true);
             }
 
@@ -169,7 +165,7 @@ public class UserRepository implements Repository<UserDTO, String> {
             allUserCards.addAll(userDTO.getStack());
             allUserCards.addAll(userDTO.getDeck());
 
-            for(Card card : allUserCards){
+            for (Card card : allUserCards) {
                 card.setOwner(userDTO.getUsername());
                 getCardDao().update(card);
             }
@@ -181,10 +177,10 @@ public class UserRepository implements Repository<UserDTO, String> {
     }
 
 
-    public UserData getUserData(String username){
+    public UserData getUserData(String username) {
         try {
             User user = getUserDao().read(username);
-            if(user == null){
+            if (user == null) {
                 return null;
             }
             return new UserData(
@@ -199,10 +195,10 @@ public class UserRepository implements Repository<UserDTO, String> {
         }
     }
 
-    public UserStats getUserStats(String username){
+    public UserStats getUserStats(String username) {
         try {
             User user = getUserDao().read(username);
-            if(user == null){
+            if (user == null) {
                 return null;
             }
             return new UserStats(
@@ -218,13 +214,13 @@ public class UserRepository implements Repository<UserDTO, String> {
         }
     }
 
-    public ArrayList<UserStats> getScores(){
-        try{
+    public ArrayList<UserStats> getScores() {
+        try {
 
             LinkedHashMap<String, User> users = getUserDao().read();
             ArrayList<UserStats> userStats = new ArrayList<>();
 
-            for(User user : users.values()){
+            for (User user : users.values()) {
                 userStats.add(this.getUserStats(user.getUsername()));
             }
 
@@ -235,25 +231,25 @@ public class UserRepository implements Repository<UserDTO, String> {
         }
     }
 
-/*
-    //TODO: Überprüfen ob user schon vorhanden -> getById -> was gibt das zurück wenn nicht gefunden? kann man das vernünftig überprüfen?
-    public UserDTO addUser(User userData) {
-        try {
+    /*
+        //TODO: Überprüfen ob user schon vorhanden -> getById -> was gibt das zurück wenn nicht gefunden? kann man das vernünftig überprüfen?
+        public UserDTO addUser(User userData) {
+            try {
 
-            getUserDao().create(userData); //write to DB
+                getUserDao().create(userData); //write to DB
 
-            return getById(userData.getName());
+                return getById(userData.getName());
 
-        } catch (SQLException e){
-            e.printStackTrace();
-            return null;
+            } catch (SQLException e){
+                e.printStackTrace();
+                return null;
+            }
+
         }
-
-    }
-*/
-    public String createUser(User user){
+    */
+    public String createUser(User user) {
         try {
-            if(getById(user.getUsername()) != null){
+            if (getById(user.getUsername()) != null) {
                 return null;
             }
             return getUserDao().create(user); //returns username
@@ -269,13 +265,13 @@ public class UserRepository implements Repository<UserDTO, String> {
 
         User user = getUserDao().read(username);
 
-        if(changes.getName() != null){
+        if (changes.getName() != null) {
             user.setName(changes.getName());
         }
-        if(changes.getBio() != null){
+        if (changes.getBio() != null) {
             user.setBio(changes.getBio());
         }
-        if(changes.getImage() != null){
+        if (changes.getImage() != null) {
             user.setImage(changes.getImage());
         }
 
@@ -285,10 +281,11 @@ public class UserRepository implements Repository<UserDTO, String> {
     public Boolean checkUserLogin(String username, String password) throws SQLException {
         User user = getUserDao().read(username);
 
-        if(user == null){
+        if (user == null) {
             return false;
         }
 
         return user.getPassword().matches(password);
     }
+
 }
