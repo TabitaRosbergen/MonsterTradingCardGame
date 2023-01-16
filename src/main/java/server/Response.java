@@ -46,6 +46,14 @@ public class Response {
         );
     }
 
+    public static Response getPlaintextResponse(HttpStatus httpStatus, String content){
+        return new Response(
+                httpStatus,
+                ContentType.TEXT,
+                content
+        );
+    }
+
     protected String build() {
         return "HTTP/1.1 " + getStatusCode() + " " + getStatusMessage() + "\r\n" +
                 "Content-Type: " + getContentType() + "\r\n" +

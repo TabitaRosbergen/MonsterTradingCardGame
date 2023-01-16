@@ -1,5 +1,6 @@
 package app;
 
+import app.controllers.BattleController;
 import app.controllers.PackageController;
 import app.controllers.TradeController;
 import app.controllers.UserController;
@@ -32,6 +33,7 @@ public class App {
     private UserController userController;
     private PackageController packageController;
     private TradeController tradeController;
+    private BattleController battleController;
 
     private UserRepository userRepository;
 
@@ -59,7 +61,9 @@ public class App {
         UserController userController = new UserController(userRepository);
         PackageController packageController = new PackageController(packageRepository, userRepository);
         TradeController tradeController = new TradeController(tradeRepository, userRepository, cardDao);
+        BattleController battleController = new BattleController(userRepository);
 
+        setBattleController(battleController);
         setUserController(userController);
         setPackageController(packageController);
         setTradeController(tradeController);
@@ -121,7 +125,7 @@ public class App {
                     return getTradeController().acceptTrade(request.getBody(), tradeId, authUser);
                 }
                 if(request.getPathname().matches("/battles")){
-                    //TODO: fertig implementieren
+                    return getBattleController().battleRequest(authUser);
                 }
                 break;
             }

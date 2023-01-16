@@ -19,6 +19,8 @@ public class Player {
     MonsterType monsterType;
     double effectiveness;
 
+    public volatile String battleLog = ""; //to tell compiler that it could be changed by another thread
+
     public Player(UserDTO user){
         setUser(user);
         effectiveness = 1.00;
