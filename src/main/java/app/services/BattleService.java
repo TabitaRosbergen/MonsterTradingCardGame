@@ -19,6 +19,8 @@ public class BattleService {
     Player player1;
     Player player2;
 
+    String battlelog;
+
 
 
 
@@ -29,29 +31,197 @@ public class BattleService {
 
    public void startBattle() {
 
-       player1.setBattleLog("Battle over1");
-       player2.setBattleLog("Battle over2");
-       return;
+        Player winner;
 
-     /*  for (int i = 0; i < 100; i++) {
+       int rounds = 0;
+       for (;rounds < 100; rounds++) {
 
            if (!getPlayer1().getUser().getDeck().isEmpty() && !getPlayer2().getUser().getDeck().isEmpty()) {
-               //TODO: BATTLE SHOULD BE OVER
-               player1.setBattleLog("Battle over1");
-               player2.setBattleLog("Battle over2");
-               return;
+               //One Player has lost all the cards
+               break;
            } else {
                getPlayer1().chooseRandomCard();
                getPlayer2().chooseRandomCard();
            }
+           reconfigureDecks(determineWinner()); //null is handled in reconfigure deck
 
-           //determine Winner könnte null zurückgeben TODO: hier weiter machen
-           reconfigureDecks(determineWinner());
-       }*/
+       }
+       if(player1.getRoundsWon() == player2.getRoundsWon()){
+           battlelog += "\nThis Battle was a draw.\nthe ELOs stay unchanged";
+       }
+       else if(getPlayer1().getRoundsWon() > getPlayer2().getRoundsWon()){
+
+           battlelog +="\n" + player1.getUser().getUsername() + "won the battle with "
+                   + player1.getRoundsWon() + " rounds of " + rounds + "won.";
+
+           player1.getUser().setElo(player1.getUser().getElo() + 3);
+           player2.getUser().setElo(player2.getUser().getElo() - 5);
+
+           battlelog += "\nELO:\n" + player1.getUser().getUsername() + ": " + player1.getUser().getElo() +
+                   "\n" + player2.getUser().getUsername() + ": " + player2.getUser().getElo();
+       }
+       //elo
+       //TODO: BATTLE SHOULD BE OVER
+
    }
 
+   Player determineWinner(){
+       Player winner = null;
+
+       if(getPlayer1().getMonsterType() == null && getPlayer2().getMonsterType() == null){
+           calculateEffectiveness();
+           winner = elementFight(getPlayer1(), getPlayer2());
+       }
+       else if(getPlayer1().getMonsterType() != null && getPlayer2().getMonsterType() == null){
+           winner = monsterVsSpell(getPlayer1(), getPlayer2());
+       }
+       else if(getPlayer1().getMonsterType() == null && getPlayer2().getMonsterType() != null) {
+           winner = monsterVsSpell(getPlayer2(), getPlayer1());
+       }
+       else{
+           winner = monsterVsMonster();
+       }
+       if(winner != null){
+           winner.setRoundsWon(winner.getRoundsWon()+1);
+       }
+       return winner;
+
+   }
+
+    Player elementFight(Player playerOne, Player playerTwo){
+
+        if(playerOne.getEffectiveness()* playerOne.getFightingCard().getDamage() > playerTwo.getEffectiveness()* playerTwo.getFightingCard().getDamage()){
+            return playerOne;
+        }
+        else if(playerOne.getEffectiveness()* playerOne.getFightingCard().getDamage() < playerTwo.getEffectiveness()* playerTwo.getFightingCard().getDamage()){
+            return playerTwo;
+        }
+        else return null;
+
+    }
+
+    Player monsterVsSpell(Player monster, Player spell){
+
+       if(monster.getMonsterType() == MonsterType.KRAKEN){
+           return monster;
+       }
+       if(monster.getMonsterType() == MonsterType.KNIGHT && spell.getElement() == Element.Water){
+           return spell;
+       }
+       else{
+           calculateEffectiveness();
+           return elementFight(monster, spell);
+       }
+
+    }
+
+    Player monsterVsMonster(){
+        System.out.println("MONSTER VS MONSTER");
+
+        //GOBLIN VS DRAGON
+        if(getPlayer1().getMonsterType() == MonsterType.GOBLIN && getPlayer2().getMonsterType() == MonsterType.DRAGON){
+            return getPlayer1();
+        }
+        if(getPlayer1().getMonsterType() == MonsterType.DRAGON && getPlayer2().getMonsterType() == MonsterType.GOBLIN){
+            return getPlayer2();
+        }
+
+        //WIZZARD VS ORK
+        if(getPlayer1().getMonsterType() == MonsterType.WIZZARD && getPlayer2().getMonsterType() == MonsterType.ORK){
+            return getPlayer1();
+        }
+        if(getPlayer1().getMonsterType() == MonsterType.ORK && getPlayer2().getMonsterType() == MonsterType.WIZZARD){
+            return getPlayer2();
+        }
+
+        //FIREELVE VS DRAGON
+        if(getPlayer1().getMonsterType() == MonsterType.ELVE && getPlayer1().getElement() == Element.Fire && getPlayer2().getMonsterType() == MonsterType.DRAGON){
+            return getPlayer1();
+        }
+        if(getPlayer1().getMonsterType() == MonsterType.DRAGON && getPlayer2().getElement() == Element.Fire && getPlayer2().getMonsterType() == MonsterType.ELVE){
+            return getPlayer2();
+        }
+
+        //REGULAR //Elements should not have any effect
+        player1.setEffectiveness(1.0);
+        player2.setEffectiveness(1.0);
+        return elementFight(getPlayer1(), getPlayer2());
+    }
 
 
+    void reconfigureDecks(Player winner){
+        if(winner == getPlayer1()){
+            System.out.println("Round won by" + getPlayer1().getUser().getName());
+            getPlayer1().getUser().getDeck().add(getPlayer2().getFightingCard());
+            getPlayer2().getUser().getDeck().remove(getPlayer2().getFightingCard());
+
+        }
+        else if(winner == getPlayer2()){
+            System.out.println("Round won by" + getPlayer2().getUser().getName());
+            getPlayer2().getUser().getDeck().add(getPlayer1().getFightingCard());
+            getPlayer1().getUser().getDeck().remove(getPlayer1().getFightingCard());
+        }
+        else{ //winner was null
+            System.out.println("This round was a draw!");
+        }
+
+        getPlayer1().setElement(null);
+        getPlayer1().setMonsterType(null);
+        getPlayer2().setElement(null);
+        getPlayer2().setElement(null);
+    }
+
+
+    void calculateEffectiveness(){
+        double[][] effectivenessTable = {
+                {1.0, 0.5, 2.0}, // Normal vs Normal, Normal vs Fire, Normal vs Water
+                {2.0, 1.0, 0.5}, // Fire vs Normal, Fire vs Fire, Fire vs Water
+                {0.5, 2.0, 1.0}  // Water vs Normal, Water vs Fire, Water vs Water
+        };
+
+       int row = getPlayer1().getElement().ordinal();
+       int col = getPlayer2().getElement().ordinal();
+
+        getPlayer1().setEffectiveness(effectivenessTable[row][col]);
+        getPlayer2().setEffectiveness(effectivenessTable[col][row]);
+    }
+}
+
+ /*
+    void calculateEffectiveness(){
+        if(getPlayer1().getElement() == Element.Water && getPlayer2().getElement() == Element.Fire){
+            getPlayer1().setEffectiveness(2.0);
+            getPlayer2().setEffectiveness(0.5);
+        }
+        else if (getPlayer1().getElement() == Element.Fire && getPlayer2().getElement() == Element.Water) {
+            getPlayer1().setEffectiveness(0.5);
+            getPlayer2().setEffectiveness(2.0);
+        }
+        else if (getPlayer1().getElement() == Element.Fire && getPlayer2().getElement() == Element.Normal) {
+            getPlayer1().setEffectiveness(2.0);
+            getPlayer2().setEffectiveness(0.5);
+        }
+        else if (getPlayer1().getElement() == Element.Normal && getPlayer2().getElement() == Element.Fire) {
+            getPlayer2().setEffectiveness(2.0);
+            getPlayer1().setEffectiveness(0.5);
+        }
+        else if (getPlayer1().getElement() == Element.Normal && getPlayer2().getElement() == Element.Water) {
+            getPlayer1().setEffectiveness(2.0);
+            getPlayer2().setEffectiveness(0.5);
+        }
+        else if (getPlayer1().getElement() == Element.Water && getPlayer2().getElement() == Element.Normal) {
+            getPlayer1().setEffectiveness(0.5);
+            getPlayer2().setEffectiveness(2.0);
+        }
+        else{
+            getPlayer2().setEffectiveness(1.0);
+            getPlayer1().setEffectiveness(1.0);
+        }
+    }
+
+     */
+
+/*
     Player determineWinner(){
 
         if(getPlayer1().getMonsterType() == null && getPlayer2().getMonsterType() == null){
@@ -74,7 +244,7 @@ public class BattleService {
 
         //MONSTER VS SPELL
 
-            System.out.println("SPELL VS MONSTER");
+                       System.out.println("SPELL VS MONSTER");
 
             //KRAKEN IS IMMUNE AGAINST SPELLS
             if(getPlayer1().getMonsterType() == MonsterType.KRAKEN){
@@ -89,10 +259,10 @@ public class BattleService {
 
             //REGULAR
             calculateEffectiveness();
-            if(getPlayer1().getFightingCard().getDamage() > getPlayer2().getFightingCard().getDamage()) {
+            if(getPlayer1().getFightingCard().getDamage()* getPlayer1().getEffectiveness() > getPlayer2().getFightingCard().getDamage() * getPlayer2().getEffectiveness()) {
                 return getPlayer1();
             }
-            if(getPlayer1().getFightingCard().getDamage() < getPlayer2().getFightingCard().getDamage()) {
+            if(getPlayer1().getFightingCard().getDamage()* getPlayer1().getEffectiveness() < getPlayer2().getFightingCard().getDamage() * getPlayer2().getEffectiveness()) {
                 return getPlayer2();
             }
             else {
@@ -105,24 +275,22 @@ public class BattleService {
         //SPELL VS MONSTER
 
             //KRAKEN IS IMMUNE AGAINST SPELLS
-
             if(getPlayer2().getMonsterType() == MonsterType.KRAKEN){
                 System.out.println("Kraken is immune to spells!");
                 return getPlayer2();
             }
 
             //WATERSPELL ALWAYS WINS AGAINST KNIGHT
-
             if(getPlayer1().getElement() == Element.Water && getPlayer2().getMonsterType() == MonsterType.KNIGHT){
                 return getPlayer2();
             }
 
             //REGULAR
             calculateEffectiveness();
-            if(getPlayer1().getFightingCard().getDamage() > getPlayer2().getFightingCard().getDamage()) {
+            if(getPlayer1().getFightingCard().getDamage()* getPlayer1().getEffectiveness() > getPlayer2().getFightingCard().getDamage() * getPlayer2().getEffectiveness()) {
                 return getPlayer1();
             }
-            if(getPlayer1().getFightingCard().getDamage() < getPlayer2().getFightingCard().getDamage()) {
+            if(getPlayer1().getFightingCard().getDamage()* getPlayer1().getEffectiveness() < getPlayer2().getFightingCard().getDamage() * getPlayer2().getEffectiveness()) {
                 return getPlayer2();
             }
             else {
@@ -160,10 +328,10 @@ public class BattleService {
             }
 
             //REGULAR
-            if(getPlayer1().getFightingCard().getDamage() > getPlayer2().getFightingCard().getDamage()) {
+            if(getPlayer1().getFightingCard().getDamage()* getPlayer1().getEffectiveness() > getPlayer2().getFightingCard().getDamage() * getPlayer2().getEffectiveness()) {
                 return getPlayer1();
             }
-            if(getPlayer1().getFightingCard().getDamage() < getPlayer2().getFightingCard().getDamage()) {
+            if(getPlayer1().getFightingCard().getDamage()* getPlayer1().getEffectiveness() < getPlayer2().getFightingCard().getDamage() * getPlayer2().getEffectiveness()) {
                 return getPlayer2();
             }
             else {
@@ -172,54 +340,6 @@ public class BattleService {
         }
 
     }
-
-    void reconfigureDecks(Player winner){
-        if(winner == getPlayer1()){
-            System.out.println("Round won by" + getPlayer1().getUser().getName());
-            getPlayer1().getUser().getDeck().add(getPlayer2().getFightingCard());
-            getPlayer2().getUser().getDeck().remove(getPlayer2().getFightingCard());
-        }
-        else if(winner == getPlayer2()){
-            System.out.println("Round won by" + getPlayer2().getUser().getName());
-            getPlayer2().getUser().getDeck().add(getPlayer1().getFightingCard());
-            getPlayer1().getUser().getDeck().remove(getPlayer1().getFightingCard());
-        }
-        else{
-            System.out.println("This round was a draw!");
-        }
-    }
-
-    void calculateEffectiveness(){
-        if(getPlayer1().getElement() == Element.Water && getPlayer2().getElement() == Element.Fire){
-            getPlayer1().setEffectiveness(2.0);
-            getPlayer2().setEffectiveness(0.5);
-        }
-        else if (getPlayer1().getElement() == Element.Fire && getPlayer2().getElement() == Element.Water) {
-            getPlayer1().setEffectiveness(0.5);
-            getPlayer2().setEffectiveness(2.0);
-        }
-        else if (getPlayer1().getElement() == Element.Fire && getPlayer2().getElement() == Element.Normal) {
-            getPlayer1().setEffectiveness(2.0);
-            getPlayer2().setEffectiveness(0.5);
-        }
-        else if (getPlayer1().getElement() == Element.Normal && getPlayer2().getElement() == Element.Fire) {
-            getPlayer2().setEffectiveness(2.0);
-            getPlayer1().setEffectiveness(0.5);
-        }
-        else if (getPlayer1().getElement() == Element.Normal && getPlayer2().getElement() == Element.Water) {
-            getPlayer1().setEffectiveness(2.0);
-            getPlayer2().setEffectiveness(0.5);
-        }
-        else if (getPlayer1().getElement() == Element.Water && getPlayer2().getElement() == Element.Normal) {
-            getPlayer1().setEffectiveness(0.5);
-            getPlayer2().setEffectiveness(2.0);
-        }
-        else{
-            getPlayer2().setEffectiveness(1.0);
-            getPlayer1().setEffectiveness(1.0);
-        }
-    }
+*/
 
 
-
-}

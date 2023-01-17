@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 public class Player {
     UserDTO user;
+    int roundsWon = 0;
     Card fightingCard;
 
     Element element;
@@ -51,6 +52,9 @@ public class Player {
         else if (name.contains("Normal")) {
             setElement(Element.Normal);
             name = name.replace("Normal", "");
+        }
+        else{
+            setElement(null);
         }
 
         if(name.contains("Spell")){

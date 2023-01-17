@@ -3,6 +3,7 @@ package app.services;
 import app.dtos.UserDTO;
 import app.models.Card;
 import app.models.Element;
+import app.models.MonsterType;
 import app.models.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -252,12 +253,15 @@ class BattleServiceTest {
 
         //assert
         assertEquals(player2, winner);
+        assertEquals(0, player1.getRoundsWon());
+        assertEquals(1, player2.getRoundsWon());
+
 
     }
 
     @Test
     @DisplayName("determineWinner draw")
-    void testDetermineWinner_SpellVSSpell_draw(){
+    void testDetermineWinner_Spell_VS_Spell_draw(){
         //arrange
         player1.setMonsterType(null);
         player1.setElement(Element.Water);
@@ -270,8 +274,65 @@ class BattleServiceTest {
 
         //assert
         assertNull(winner);
+        assertEquals(0, player1.getRoundsWon());
+        assertEquals(0, player2.getRoundsWon());
 
     }
 
+    @Test
+    @DisplayName("determineWinner -> Kraken(player1) is immune to Spell")
+    void testDetermineWinner_Kraken_VS_Spell(){
+        //arrange
+        player1.setMonsterType(MonsterType.KRAKEN);
+        player1.setElement(Element.Water);
+
+        player2.setMonsterType(null);
+        player2.setElement(Element.Water);
+
+        //act
+        Player winner = battleService.determineWinner();
+
+        //assert
+        assertEquals(player1, winner);
+        assertEquals(1, player1.getRoundsWon());
+        assertEquals(0, player2.getRoundsWon());
+    }
+    @Test
+    @DisplayName("determineWinner -> Kraken(player2) is immune to Spell")
+    void testDetermineWinner_Spell_VS_Kraken(){
+        //arrange
+        player1.setMonsterType(null);
+        player1.setElement(Element.Water);
+
+        player2.setMonsterType(MonsterType.KRAKEN);
+        player2.setElement(Element.Water);
+
+        //act
+        Player winner = battleService.determineWinner();
+
+        //assert
+        assertEquals(player2, winner);
+        assertEquals(0, player1.getRoundsWon());
+        assertEquals(1, player2.getRoundsWon());
+    }
+
+    @Test
+    @DisplayName("determineWinner -> Knight(player1) looses against water")
+    void testDetermineWinner_Knight_VS_Water(){
+        //arrange
+        player1.setMonsterType(MonsterType.KNIGHT);
+        player1.setElement(null);
+
+        player2.setMonsterType(null);
+        player2.setElement(Element.Water);
+
+        //act
+        Player winner = battleService.determineWinner();
+
+        //assert
+        assertEquals(player2, winner);
+        assertEquals(0, player1.getRoundsWon());
+        assertEquals(1, player2.getRoundsWon());
+    }
 
 }
