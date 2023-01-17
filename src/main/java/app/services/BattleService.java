@@ -19,7 +19,8 @@ public class BattleService {
     Player player1;
     Player player2;
 
-    String battlelog;
+    StringBuilder battleLog = new StringBuilder();
+    int rounds;
 
 
 
@@ -33,8 +34,9 @@ public class BattleService {
 
         Player winner;
 
-       int rounds = 0;
+       rounds = 0;
        for (;rounds < 100; rounds++) {
+           getBattleLog().append("\n\nRound").append(rounds);
 
            if (!getPlayer1().getUser().getDeck().isEmpty() && !getPlayer2().getUser().getDeck().isEmpty()) {
                //One Player has lost all the cards
@@ -42,26 +44,47 @@ public class BattleService {
            } else {
                getPlayer1().chooseRandomCard();
                getPlayer2().chooseRandomCard();
+
+               //BattleLog
+               getBattleLog().append("\n").append(getPlayer1().getUser().getUsername());
+               getBattleLog().append(" Card: ").append(getPlayer1().getFightingCard().getName());
+               getBattleLog().append("\nVS");
+               getBattleLog().append("\n").append(getPlayer2().getUser().getUsername());
+               getBattleLog().append(" Card: ").append(getPlayer2().getFightingCard().getName());
+
            }
            reconfigureDecks(determineWinner()); //null is handled in reconfigure deck
 
        }
-       if(player1.getRoundsWon() == player2.getRoundsWon()){
-           battlelog += "\nThis Battle was a draw.\nthe ELOs stay unchanged";
+
+   //BATTLE IS OVER
+       //draw
+       if(getPlayer1().getRoundsWon() == getPlayer2().getRoundsWon()){
+           getBattleLog().append("\nThis Battle was a draw.\nthe ELOs stay unchanged");
        }
+       //Player1 won
        else if(getPlayer1().getRoundsWon() > getPlayer2().getRoundsWon()){
-
-           battlelog +="\n" + player1.getUser().getUsername() + "won the battle with "
-                   + player1.getRoundsWon() + " rounds of " + rounds + "won.";
-
-           player1.getUser().setElo(player1.getUser().getElo() + 3);
-           player2.getUser().setElo(player2.getUser().getElo() - 5);
-
-           battlelog += "\nELO:\n" + player1.getUser().getUsername() + ": " + player1.getUser().getElo() +
-                   "\n" + player2.getUser().getUsername() + ": " + player2.getUser().getElo();
+           wrapUpBattle(getPlayer1(), getPlayer2());
        }
-       //elo
+       //Player2 won
+       else{
+           wrapUpBattle(getPlayer2(), getPlayer1());
+       }
        //TODO: BATTLE SHOULD BE OVER
+
+   }
+
+   void wrapUpBattle(Player winner, Player loser){
+       //BattleLog -> who won
+       getBattleLog().append("\n").append(winner.getUser().getUsername()).append("won the battle with ").append(winner.getRoundsWon()).append(" rounds of ").append(getRounds()).append("won.");
+
+       //calculate ELO
+       winner.getUser().setElo(winner.getUser().getElo() + 3);
+       loser.getUser().setElo(loser.getUser().getElo() - 5);
+
+       //BattleLog -> changed Elo
+       getBattleLog().append("\nELO:\n").append(winner.getUser().getUsername()).append(": ").append(winner.getUser().getElo());
+       getBattleLog().append("\n").append(loser.getUser().getUsername()).append(": ").append(loser.getUser().getElo());
 
    }
 
@@ -71,6 +94,7 @@ public class BattleService {
        if(getPlayer1().getMonsterType() == null && getPlayer2().getMonsterType() == null){
            calculateEffectiveness();
            winner = elementFight(getPlayer1(), getPlayer2());
+
        }
        else if(getPlayer1().getMonsterType() != null && getPlayer2().getMonsterType() == null){
            winner = monsterVsSpell(getPlayer1(), getPlayer2());
@@ -83,6 +107,7 @@ public class BattleService {
        }
        if(winner != null){
            winner.setRoundsWon(winner.getRoundsWon()+1);
+
        }
        return winner;
 
@@ -143,8 +168,8 @@ public class BattleService {
         }
 
         //REGULAR //Elements should not have any effect
-        player1.setEffectiveness(1.0);
-        player2.setEffectiveness(1.0);
+        getPlayer1().setEffectiveness(1.0);
+        getPlayer2().setEffectiveness(1.0);
         return elementFight(getPlayer1(), getPlayer2());
     }
 
