@@ -1,10 +1,13 @@
 package app.services;
 
+import app.models.Card;
 import app.models.Element;
 import app.models.MonsterType;
 import app.models.Player;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
 
 
 @Getter
@@ -17,7 +20,9 @@ public class BattleService {
     StringBuilder battleLog = new StringBuilder();
     int rounds;
 
-    Boolean unoReverseCard = true;
+    Boolean unoReverse = true;
+
+    Card unoReverseCard = new Card("unoReverse", "unoReverseCard",0 ,  "noBody", false, true, false);
 
     public BattleService(Player player1, Player player2){
         setPlayer1(player1);
@@ -27,6 +32,19 @@ public class BattleService {
 
    public void startBattle() {
        Player winner;
+
+       //unique feature
+       // one of the two players get a special card in their deck, if the card is drawn
+       // the decks are swapped, and the reversecard is deleted so it can only appear once in a game
+       if(getUnoReverse()){
+           int temp = (Math.random() <= 0.5) ? 1 : 2;
+           if(temp == 1){
+               getPlayer1().getUser().getDeck().add(getUnoReverseCard());
+           }
+           else{
+               getPlayer2().getUser().getDeck().add(getUnoReverseCard());
+           }
+       }
 
        //BattleLog: Start Banner
        getBattleLog().append("\n\n-------------GAME ON-------------\n");
@@ -56,6 +74,11 @@ public class BattleService {
                //choose Random card, read Type and Element store it in the variables of the Players
                getPlayer1().chooseRandomCard();
                getPlayer2().chooseRandomCard();
+
+               if(getPlayer1().getFightingCard().getName().equals("unoReverseCard") || getPlayer2().getFightingCard().getName().equals("unoReverseCard")){
+                   unoReversePlayed();
+                   continue;
+               }
 
                //BattleLog: <CardName1> <Damage> VS <CardName2> <Damage>
                getBattleLog().append("\n").append(getPlayer1().getUser().getUsername());
@@ -102,6 +125,24 @@ public class BattleService {
        getPlayer2().setBattleLog(battleLog.toString());
 
    }
+
+    void unoReversePlayed(){
+        getBattleLog().append("\n :::::::The UnoReverseCard was drawn so the decks will be swapped.:::::::");
+
+        //swap decks
+        ArrayList<Card> temp = new ArrayList<>(player1.getUser().getDeck());
+        player1.getUser().getDeck().clear();
+        player1.getUser().getDeck().addAll(player2.getUser().getDeck());
+        player2.getUser().getDeck().clear();
+        player2.getUser().getDeck().addAll(temp);
+
+
+        //remove unoReverseCard
+        if(!getPlayer1().getUser().getDeck().remove(getUnoReverseCard())){
+            getPlayer2().getUser().getDeck().remove(getUnoReverseCard());
+        }
+
+    }
 
     //wrapUpBattle() adds infos to battleLog and changes Elo
     void wrapUpBattle(Player winner, Player loser){

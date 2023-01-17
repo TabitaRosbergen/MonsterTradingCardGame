@@ -30,11 +30,13 @@ public class Player {
 
 
     public void chooseRandomCard(){
-            int index = (int)(Math.random() * getUser().getDeck().size());
-            fightingCard = getUser().getDeck().get(index);
-
-
-            readTypeAndElement(fightingCard);
+        int index = (int)(Math.random() * getUser().getDeck().size());
+        fightingCard = getUser().getDeck().get(index);
+        //Unique feature: no element or type is set
+        if(fightingCard.getName().equals("unoReverseCard")) {
+           return;
+        }
+        readTypeAndElement(fightingCard);
 
     }
 

@@ -166,47 +166,4 @@ class PackageRepositoryTest {
 
 
     }
-
-
-    //TODO: not working properly
-    /*
-    @Test
-    @DisplayName("open Package ->user methods")
-    void testOpenPackage_userMethods() throws SQLException {
-        //arrange
-        UserDTO user = mock(UserDTO.class);
-        CardDao cardDao = mock(CardDao.class);
-        UserRepository userRepository = mock(UserRepository.class);
-        ArgumentCaptor<UserDTO> argumentCaptor = ArgumentCaptor.forClass(UserDTO.class);
-
-        PackageRepository packageRepository = new PackageRepository(userRepository, cardDao);
-        ArrayList<Card> pack = new ArrayList<>();
-        pack.add(new Card(
-                "1",
-                "testcard1",
-                20,
-                null,
-                true,
-                false,
-                false)
-        );
-
-        when(cardDao.readPackCards()).thenReturn(pack);
-
-        //act
-        ArrayList<Card> result = packageRepository.openPackage(user);
-
-        //assert
-        verify(user).getStack().addAll(pack);
-        verify(user).setCoins(user.getCoins() -5);
-        verify(userRepository).updateUser(user);
-
-        verify(userRepository, times(1)).updateUser(argumentCaptor.capture());
-        ArrayList<UserDTO> capturedUser = (ArrayList<UserDTO>) argumentCaptor.getAllValues();
-
-        assertEquals(15, capturedUser.get(0).getCoins());
-    }
-
-   */
-
 }
