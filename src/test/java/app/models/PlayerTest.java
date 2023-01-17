@@ -94,7 +94,7 @@ class PlayerTest {
     @DisplayName("readType&Element -> NormalSpell")
     void testReadTypeAndElement_NormalSpell(){
         //arrange
-        card = new Card("1","NormalSpell", 20, "testuser", false, true, false);
+        card = new Card("1","RegularSpell", 20, "testuser", false, true, false);
         player.fightingCard = card;
 
         //act
@@ -107,17 +107,17 @@ class PlayerTest {
     }
 
     @Test
-    @DisplayName("readType&Element -> FireGoblin")
+    @DisplayName("readType&Element -> Goblin")
     void testReadTypeAndElement_FireGoblin(){
         //arrange
-        card = new Card("1","FireGoblin", 20, "testuser", false, true, false);
+        card = new Card("1","Goblin", 20, "testuser", false, true, false);
         player.fightingCard = card;
 
         //act
         player.readTypeAndElement(card);
 
         //assert
-        assertEquals(player.element, Element.Fire );
+        assertEquals(player.element, Element.Normal );
         assertEquals(player.monsterType, MonsterType.GOBLIN);
 
     }

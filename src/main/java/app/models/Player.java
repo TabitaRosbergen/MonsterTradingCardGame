@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 public class Player {
     UserDTO user;
+
     int roundsWon = 0;
     Card fightingCard;
 
@@ -29,14 +30,12 @@ public class Player {
 
 
     public void chooseRandomCard(){
-        if(getUser().getDeck().isEmpty()){
-            fightingCard = null;
-        }
-        else {
             int index = (int)(Math.random() * getUser().getDeck().size());
             fightingCard = getUser().getDeck().get(index);
+
+
             readTypeAndElement(fightingCard);
-        }
+
     }
 
     void readTypeAndElement(Card card){
@@ -49,12 +48,8 @@ public class Player {
             setElement(Element.Water);
             name = name.replace("Water", "");
         }
-        else if (name.contains("Normal")) {
+        else if (!name.contains("Fire") && !name.contains("Water")) {
             setElement(Element.Normal);
-            name = name.replace("Normal", "");
-        }
-        else{
-            setElement(null);
         }
 
         if(name.contains("Spell")){

@@ -48,24 +48,6 @@ public class UserController extends Controller{
         }
     }
 
-    /*
-    public void getUsers(){ //TODO: RETURNTYPE muss respose sein + implementieren
-        try {
-            ArrayList<UserDTO> users = getUserRepository().getAll();
-            String userJSON = getObjectMapper().writeValueAsString(users);
-            System.out.println(userJSON); //TEST //////////////////////////////////////////////////
-
-            //TODO return RESPONSE
-
-
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-
-            //TODO return RESPONSE
-        }
-    }
-*/
-
     public Response editUser(String body, String username, String authUsername) {
 
         if(!username.equals(authUsername) && !authUsername.equals("admin")){

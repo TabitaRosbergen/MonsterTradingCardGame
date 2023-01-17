@@ -13,11 +13,11 @@ import java.util.Locale;
 @Getter
 @Setter(AccessLevel.PROTECTED)
 public class Request {
-    private Method method; //GET, POST, PUT, DELETE
-    private String pathname; //
+    private Method method;
+    private String pathname;
     private String params;
     private String contentType;
-    private Integer contentLength;
+    private Integer contentLength = 0;
     private String body = "";
     private String token;
 
